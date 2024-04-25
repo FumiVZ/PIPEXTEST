@@ -6,7 +6,7 @@
 /*   By: vzuccare <vzuccare@student.42lyon.fr>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/13 16:27:22 by vzuccare          #+#    #+#             */
-/*   Updated: 2024/04/13 16:29:10 by vzuccare         ###   ########lyon.fr   */
+/*   Updated: 2024/04/24 15:15:03 by vzuccare         ###   ########lyon.fr   */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,4 +23,26 @@ int	flags(char *str)
 		return (001 | 0100 | 01000);
 	}
 	return (0);
+}
+
+int	count_pipes(t_pipex *pipex)
+{
+	int	i;
+	int	j;
+
+	i = 0;
+	j = 0;
+	while (pipex->cmd[j])
+	{
+		if (ft_strncmp(pipex->cmd[j], "|", 1) == 0)
+			i++;
+		if (ft_strncmp(pipex->cmd[j], ">", 1) == 0)
+			i++;
+		if (ft_strncmp(pipex->cmd[j], ">>", 2) == 0)
+			i++;
+		if (ft_strncmp(pipex->cmd[j], "<", 1) == 0)
+			i++;
+		j++;
+	}
+	return (i);
 }

@@ -6,7 +6,7 @@
 /*   By: vzuccare <vzuccare@student.42lyon.fr>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/21 17:28:06 by machrist          #+#    #+#             */
-/*   Updated: 2024/04/19 14:35:37 by vzuccare         ###   ########lyon.fr   */
+/*   Updated: 2024/04/25 18:38:56 by vzuccare         ###   ########lyon.fr   */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -38,57 +38,54 @@ static char	*get_cmd(char **paths, char **cmd_args)
 	return (NULL);
 }
 
-static char	*get_cmd_with_path(t_pipex *pipex)
+static char	*get_cmd_with_path(t_pipex *pipex, t_cmd *cmds)
 {
-	if (!pipex->cmd_args)
+	if (!cmds->args)
 		return (NULL);
-	if (pipex->cmd_args[0][0] == '/' || !ft_strncmp(*pipex->cmd_args, "./", 2))
+	if (cmds->args[0][0] == '/' || !ft_strncmp(*cmds->args, "./", 2))
 	{
-	ft_printf_fd(2, "cmd_args: %s\n", pipex->cmd_args[0]);
-		if (access(pipex->cmd_args[0], X_OK) == 0 || errno == EACCES)
-			return (pipex->cmd_args[0]);
+		if (access(cmds->args[0], X_OK) == 0 || errno == EACCES)
+			return (cmds->args[0]);
 		ft_printf_fd(2, (char *)ERR_FILE, \
-			pipex->cmd_args[0], strerror(errno));
-		child_free(pipex);
+			cmds->args[0], strerror(errno));
+		child_free(cmds);
 		parent_free(pipex);
 /* 		if (pipex->i == ac - 1)
 			exit (127); */
 		exit (EXIT_FAILURE);
 	}
 	else
-		return (get_cmd(pipex->paths, pipex->cmd_args));
+		return (get_cmd(pipex->paths, cmds->args));
 }
 
-static void	sub_dup2(int read, int write)
+void	sub_dup2(int read, int write)
 {
 	dup2(read, 0);
 	dup2(write, 1);
 }
 
-static void	child_exec(t_pipex pipex, char **env)
+static void	child_exec(t_pipex pipex, t_cmd cmds, char **env)
 {
-	pipex.pid = fork();
+	return ;
 	if (pipex.pid == 0)
 	{
-		pipex.cmd_paths = get_cmd_with_path(&pipex);
+		pipex.cmd_paths = get_cmd_with_path(&pipex, &cmds);
 		if (!pipex.cmd[pipex.i])
-			pipex.cmd_paths = get_cmd(pipex.paths, pipex.cmd_args);
+			pipex.cmd_paths = get_cmd(pipex.paths, cmds.args);
 		if (!pipex.cmd || errno == EACCES)
 		{
 			if (errno == EACCES)
-				msg_error_cmd(ERR_ACCESS, pipex);
+				msg_error_cmd(ERR_ACCESS, cmds);
 			else
-				msg_error_cmd(ERR_CMD, pipex);
-			child_free(&pipex);
+				msg_error_cmd(ERR_CMD, cmds);
+			child_free(&cmds);
 			parent_free(&pipex);
 		/* 		if (pipex.id == pipex.cmd_nmbs - 1)
 			exit (127); */
 			exit (EXIT_FAILURE);
 		}
-		ft_printf_fd(2, "cmd_paths: %s\n", pipex.cmd_paths);
-		print_tab(pipex.cmd_args);
-		execve(pipex.cmd_paths, pipex.cmd_args, env);
-		child_free(&pipex);
+		execve(pipex.cmd_paths, cmds.args, env);
+		child_free(&cmds);
 		parent_free(&pipex);
 		exit (EXIT_FAILURE);
 	}
@@ -96,37 +93,35 @@ static void	child_exec(t_pipex pipex, char **env)
 
 void	child_crt(t_pipex pipex, char **env)
 {
-	while (pipex.cmd[pipex.i])
+	(void) env;
+	t_cmd	*cmds;
+	int		i;
+
+	cmds = NULL;
+	i = 0;
+	while (pipex.cmd[pipex.i] && (ft_strncmp(pipex.cmd[pipex.i], "&&", 2) \
+		|| ft_strncmp(pipex.cmd[pipex.i], "||", 2)))
 	{
-		if (pipex.cmd[pipex.i][0] == '<')
+		if (!redir_dup(&pipex))
 		{
-			pipex.infile_name = pipex.cmd[pipex.i + 1];
-			pipex.infile = open(pipex.cmd[pipex.i + 1], O_RDONLY);
-			if (pipex.infile < 0)
-				msg_error_infile(ERR_FILE, pipex);
-			sub_dup2(pipex.infile, pipex.pipe[1]);
+			insert_back(&cmds, &pipex);
+			while (pipex.cmd[pipex.i] && \
+				(ft_strncmp(pipex.cmd[pipex.i], ">>", 2) \
+					|| ft_strncmp(pipex.cmd[pipex.i], "<<", 2) \
+						|| pipex.cmd[pipex.i][0] != '|' \
+							|| pipex.cmd[pipex.i][0] != '<' \
+								|| pipex.cmd[pipex.i][0] != '>'))
+				pipex.i++;
+			ft_printf_fd(2, "cmd[%d] = %s\n", i, pipex.cmd[pipex.i]);
 		}
-		else if (pipex.cmd[pipex.i][0] == '>')
-		{
-			pipex.outfile_name = pipex.cmd[pipex.i + 1];
-			pipex.outfile = open(pipex.cmd[pipex.i + 1], \
-				flags(pipex.cmd[pipex.i + 1]), 0644);
-			if (pipex.outfile < 0)
-				msg_error_outfile(ERR_FILE, pipex);
-			sub_dup2(pipex.pipe[0], pipex.outfile);
-		}
-		else if (pipex.cmd[pipex.i][0] == '|')
-			sub_dup2(pipex.pipe[0], pipex.pipe[1]);
-		else
-		{
-			command_get(&pipex);
-			printf("ft_strstrlen: %zu\n", ft_strstrlen(pipex.cmd_args));
-			printf("i: %d\n", pipex.i);
+		if (pipex.cmd[pipex.i])
 			pipex.i++;
-			break ;
-		}
-		pipex.i++;
 	}
 	close_pipes(&pipex);
-	child_exec(pipex, env);
+	print_list(cmds);
+	while (cmds->next)
+	{
+		child_exec(pipex, *cmds, env);
+		cmds = cmds->next;
+	}
 }

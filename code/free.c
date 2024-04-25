@@ -6,7 +6,7 @@
 /*   By: vzuccare <vzuccare@student.42lyon.fr>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/21 17:53:23 by machrist          #+#    #+#             */
-/*   Updated: 2024/04/11 17:34:25 by vzuccare         ###   ########lyon.fr   */
+/*   Updated: 2024/04/25 18:13:27 by vzuccare         ###   ########lyon.fr   */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,14 +23,17 @@ void	parent_free(t_pipex *pipex)
 			free(pipex->paths[i++]);
 		free(pipex->paths);
 	}
-	free_split(pipex->cmd, ft_strstrlen(pipex->cmd));
+	if (pipex->cmd)
+	{
+		free_split(pipex->cmd, ft_strstrlen(pipex->cmd));
+	}
 }
 
-void	child_free(t_pipex *pipex)
+void	child_free(t_cmd *cmds)
 {
-	if (pipex->cmd_args)
+	if (cmds->args)
 	{
-		free(pipex->cmd_args);
+		free(cmds->args);
 	}
 	close(0);
 	close(1);

@@ -8,7 +8,8 @@ SRC =	code/pipex.c \
 		code/child.c \
 		code/free.c \
 		code/command.c \
-		code/utils.c
+		code/utils.c \
+		code/list.c
 
 HEADER = header/child.h  header/error.h header/error_msg.h header/pipex.h header/struct.h
 

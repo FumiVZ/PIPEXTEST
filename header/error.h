@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   error.h                                            :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: machrist <machrist@student.42lyon.fr>      +#+  +:+       +#+        */
+/*   By: vzuccare <vzuccare@student.42lyon.fr>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/21 17:51:45 by machrist          #+#    #+#             */
-/*   Updated: 2024/02/13 14:52:26 by machrist         ###   ########.fr       */
+/*   Updated: 2024/04/25 18:14:36 by vzuccare         ###   ########lyon.fr   */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,6 +20,5 @@
 # include <errno.h>
 
 void	parent_free(t_pipex *pipex);
-void	child_free(t_pipex *pipex);
 
 #endif

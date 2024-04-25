@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ft_split.c                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: machrist <machrist@student.42lyon.fr>      +#+  +:+       +#+        */
+/*   By: vzuccare <vzuccare@student.42lyon.fr>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/08 13:33:48 by machrist          #+#    #+#             */
-/*   Updated: 2024/01/17 17:08:51 by machrist         ###   ########.fr       */
+/*   Updated: 2024/04/25 14:53:39 by vzuccare         ###   ########lyon.fr   */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -67,7 +67,10 @@ void	free_split(char **str, size_t pos)
 		return (free(str));
 	i = 0;
 	while (i < pos)
+	{
+		str[i] = NULL;
 		free(str[i++]);
+	}
 	free(str);
 }
 

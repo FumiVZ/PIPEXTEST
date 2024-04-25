@@ -6,7 +6,7 @@
 /*   By: vzuccare <vzuccare@student.42lyon.fr>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/19 19:23:42 by machrist          #+#    #+#             */
-/*   Updated: 2024/04/19 14:16:59 by vzuccare         ###   ########lyon.fr   */
+/*   Updated: 2024/04/25 14:47:42 by vzuccare         ###   ########lyon.fr   */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,10 +15,13 @@
 
 void	close_pipes(t_pipex *pipex)
 {
-	if (pipex->pipe[0] || pipex->pipe[1])
+	int	i;
+
+	i = 0;
+	if (pipex->pipe[i][0] || pipex->pipe[i][1])
 	{
-		close(pipex->pipe[0]);
-		close(pipex->pipe[1]);
+		close(pipex->pipe[i][0]);
+		close(pipex->pipe[i][1]);
 	}
 	if (pipex->infile)
 		close(pipex->infile);
@@ -42,8 +45,21 @@ static void	wait_execve(t_pipex *pipex)
 
 static void	crt_pipes(t_pipex *pipex)
 {
-	if (pipe(pipex->pipe) == -1)
-		ft_printf_fd(2, "pipe failed\n");
+	int	i;
+
+	i = 0;
+	pipex->pipe_nmbs = count_pipes(pipex);
+	pipex->pipe = malloc(sizeof(int *) * (pipex->pipe_nmbs + 1));
+	while (i < pipex->pipe_nmbs)
+	{
+		pipex->pipe[i] = malloc(sizeof(int) * 2);
+		if (pipe(pipex->pipe[i]) == -1)
+		{
+			close_pipes(pipex);
+			malloc_failed(pipex);
+		}
+		i++;
+	}
 }
 
 char	*find_path(char **env)
@@ -79,12 +95,7 @@ void	init_pipex(t_pipex *pipex, char **env)
 	if (!pipex->paths)
 		malloc_failed(pipex);
 	crt_pipes(pipex);
-	pipex->i = 0;
-	while (pipex->cmd[pipex->i])
-	{
-		child_crt(*pipex, env);
-		pipex->i++;
-	}
+	child_crt(*pipex, env);
 }
 
 int	main(int ac, char **av, char **env)
