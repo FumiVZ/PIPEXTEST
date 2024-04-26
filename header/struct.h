@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   struct.h                                           :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: vzuccare <vzuccare@student.42lyon.fr>      +#+  +:+       +#+        */
+/*   By: vincent <vincent@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/21 17:20:40 by machrist          #+#    #+#             */
-/*   Updated: 2024/04/26 17:33:28 by vzuccare         ###   ########lyon.fr   */
+/*   Updated: 2024/04/27 01:42:09 by vincent          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,6 +22,8 @@ typedef struct s_cmd
 	char			**infiles_name;
 	int				*outfiles;
 	char			**outfiles_name;
+	int				pipeid;
+	int				*pipe;
 	struct s_cmd	*next;
 }	t_cmd;
 
@@ -39,10 +41,15 @@ typedef struct s_pipex
 	int		cmd_nmbs;
 	int		status;
 	int		flag;
-	int		fd[2];
+	int		nb_pipes;
+	struct s_cmd	*cmds;
 }	t_pipex;
 
 void	print_tab(char **tab);
 int		count_pipes(t_pipex *pipex);
+void	close_pipes(t_pipex *pipex, t_cmd *cmd);
+void	crt_pipes(t_pipex *pipex, t_cmd *cmd);
+void	close_files(t_pipex	*pipex, t_cmd *cmd);
+void	wait_execve(t_pipex *pipex);
 
 #endif

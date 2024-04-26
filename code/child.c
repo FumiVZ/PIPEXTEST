@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   child.c                                            :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: vzuccare <vzuccare@student.42lyon.fr>      +#+  +:+       +#+        */
+/*   By: vincent <vincent@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/21 17:28:06 by machrist          #+#    #+#             */
-/*   Updated: 2024/04/26 17:01:34 by vzuccare         ###   ########lyon.fr   */
+/*   Updated: 2024/04/27 01:42:33 by vincent          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -64,7 +64,9 @@ void	sub_dup2(int read, int write)
 
 static void	child_exec(t_pipex pipex, t_cmd cmds, char **env)
 {
-	printf("cmd: %s\n", cmds.args[0]);
+	redirect(&pipex, &cmds);
+	close_files(&pipex, &cmds);
+	ft_printf_fd(2, "cmd: %s\n", cmds.args[0]);
 	pipex.cmd_paths = get_cmd_with_path(&pipex, &cmds);
 	ft_printf_fd(2, "cmd_paths: %s\n", pipex.cmd_paths);
 	if (!pipex.cmd_paths || errno == EACCES)
@@ -74,10 +76,13 @@ static void	child_exec(t_pipex pipex, t_cmd cmds, char **env)
 		else
 			msg_error_cmd(ERR_CMD, cmds);
 		child_free(&cmds);
+		free_l(pipex.cmds);
 		parent_free(&pipex);
 		exit (EXIT_FAILURE);
 	}
 	execve(pipex.cmd_paths, cmds.args, env);
+	free_l(pipex.cmds);
+	parent_free(&pipex);
 	child_free(&cmds);
 	exit (EXIT_FAILURE);
 }
@@ -94,19 +99,32 @@ void	child_crt(t_pipex pipex, char **env)
 		if (!(chre(pipex.cmd[pipex.i], "||") && pipex.status == 0))
 		{
 			parse_cmd(&pipex, cmds);
-			while (cmds->next)
+			pipex.cmds = cmds;
+			if (cmds->next)
+			{
+				while (cmds->next)
+				{
+					pipex.pid = fork();
+					if (pipex.pid == -1)
+						msg_error(ERR_FORK, &pipex);
+					if (pipex.pid == 0)
+						child_exec(pipex, *cmds, env);
+					cmds = cmds->next;
+				}
+			}
+			else
 			{
 				pipex.pid = fork();
 				if (pipex.pid == -1)
 					msg_error(ERR_FORK, &pipex);
 				if (pipex.pid == 0)
 					child_exec(pipex, *cmds, env);
-				cmds = cmds->next;
 			}
-			print_list(cmds);
-			free_l(cmds);
+			wait_execve(&pipex);
+			free_l(pipex.cmds);
 		}
-		pipex.i++;
+		if (pipex.cmd[pipex.i])
+			pipex.i++;
 	}
 	parent_free(&pipex);
 }

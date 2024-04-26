@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   error.c                                            :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: vzuccare <vzuccare@student.42lyon.fr>      +#+  +:+       +#+        */
+/*   By: vincent <vincent@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/21 17:51:11 by machrist          #+#    #+#             */
-/*   Updated: 2024/04/26 15:39:56 by vzuccare         ###   ########lyon.fr   */
+/*   Updated: 2024/04/27 00:24:08 by vincent          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -40,33 +40,24 @@ void	msg_error_cmd(char *err, t_cmd cmds)
 	}
 }
 
-void	msg_error_infile(char *err, t_pipex pipex)
+void	msg_error_infile(char *err, t_pipex pipex, t_cmd *cmds)
 {
 	if (!pipex.infile_name)
 		perror("pipex");
 	else
 		ft_printf_fd(2, err, pipex.infile_name, strerror(errno));
-	close(pipex.fd[0]);
-	close(pipex.fd[1]);
+	close_pipes(&pipex, cmds);
 	parent_free(&pipex);
 	exit (EXIT_FAILURE);
 }
 
-void	msg_error_outfile(char *err, t_pipex pipex)
+void	msg_error_outfile(char *err, t_pipex pipex, t_cmd *cmds)
 {
-	int	i;
-
-	i = 0;
 	if (!pipex.outfile_name)
 		perror("pipex");
 	else
 		ft_printf_fd(2, err, pipex.outfile_name, strerror(errno));
-	while (i < pipex.pipe_nmbs)
-	{
-		close(pipex.fd[0]);
-		close(pipex.fd[1]);
-		i++;
-	}
+	close_pipes(&pipex, cmds);
 	parent_free(&pipex);
 	exit (EXIT_FAILURE);
 }

@@ -3,15 +3,17 @@
 /*                                                        :::      ::::::::   */
 /*   parse_ex.c                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: vzuccare <vzuccare@student.42lyon.fr>      +#+  +:+       +#+        */
+/*   By: vincent <vincent@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/25 22:04:48 by vincent           #+#    #+#             */
-/*   Updated: 2024/04/26 15:28:45 by vzuccare         ###   ########lyon.fr   */
+/*   Updated: 2024/04/27 01:42:41 by vincent          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../header/pipex.h"
 
+
+//function to compare two string char by char and by lenght
 int	chre(char *s1, char *s2)
 {
 	int	i;
@@ -31,7 +33,7 @@ int	chre(char *s1, char *s2)
 
 static void	malloc_infiles(t_pipex *pipex, t_cmd *cmds, int j)
 {
-	cmds->infiles = malloc(sizeof(int) * j);
+	cmds->infiles = malloc(sizeof(int) * (j + 1));
 	if (!cmds->infiles)
 		msg_error(ERR_MALLOC, pipex);
 	cmds->infiles_name = malloc(sizeof(char *) * (j + 1));
@@ -41,7 +43,7 @@ static void	malloc_infiles(t_pipex *pipex, t_cmd *cmds, int j)
 
 static void	malloc_outfiles(t_pipex *pipex, t_cmd *cmds, int j)
 {
-	cmds->outfiles = malloc(sizeof(int) * j);
+	cmds->outfiles = malloc(sizeof(int) * (j + 1));
 	if (!cmds->outfiles)
 		msg_error(ERR_MALLOC, pipex);
 	cmds->outfiles_name = malloc(sizeof(char *) * (j + 1));
@@ -74,6 +76,7 @@ static void	get_infiles(t_pipex *pipex, char **cmd, t_cmd *cmds)
 					msg_error_outfile(ERR_FILE, *pipex);
 			}
 			cmds->infiles_name[j] = NULL;
+			cmds->infiles[j] = -1;
 		}
 	}
 }
@@ -103,6 +106,7 @@ static void	get_outfiles(t_pipex *pipex, char **cmd, t_cmd *cmds)
 					msg_error_outfile(ERR_FILE, *pipex);
 			}
 			cmds->outfiles_name[j] = NULL;
+			cmds->outfiles[j] = -1;
 		}
 	}
 }
@@ -142,40 +146,57 @@ char **get_args(t_pipex *pipex, char **cmd)
 	return (args);
 }
 
+void	create_new_nodes(t_pipex *pipex, t_cmd *cmds)
+{
+	t_cmd	*tmp;
+
+	while (cmds->next)
+	cmds = cmds->next;
+	tmp = malloc(sizeof(t_cmd));
+	list_init(tmp);
+	if (!tmp)
+		msg_error(ERR_MALLOC, pipex);
+	tmp->args = get_args(pipex, &pipex->cmd[pipex->i]);
+	if (cmds->args)
+		pipex->cmd_nmbs++;
+	tmp->pipeid = cmds->pipeid + 1;
+	get_infiles(pipex, &pipex->cmd[pipex->i], tmp);
+	get_outfiles(pipex, &pipex->cmd[pipex->i], tmp);
+	tmp->next = NULL;
+	cmds->next = tmp;
+	pipex->i += tablen(tmp->args) + (tablen(tmp->infiles_name) * 2) \
+		+ (tablen(tmp->outfiles_name) * 2);
+	if (pipex->cmd[pipex->i] && !(chre(pipex->cmd[pipex->i], "&&") || chre(pipex->cmd[pipex->i], "||")))
+		pipex->i++;
+}
+
 // Create a struct s_cmd with all command until the end or untile "&&" or "||" each time
 // the is a pipe create a new node in the struct s_cmd we can have multiple outfile and infile
 void	parse_cmd(t_pipex *pipex, t_cmd *cmds)
 {
 	t_cmd	*tmp;
-
+	
 	pipex->i = 0;
+	pipex->cmd_nmbs = 0;
 	if (!cmds)
 		msg_error(ERR_MALLOC, pipex);
 	list_init(cmds);
 	cmds->args = get_args(pipex, &pipex->cmd[pipex->i]);
+	if (cmds->args)
+		pipex->cmd_nmbs++;
 	get_infiles(pipex, &pipex->cmd[pipex->i], cmds);
 	get_outfiles(pipex, &pipex->cmd[pipex->i], cmds);
 	cmds->next = NULL;
 	while (pipex->cmd[pipex->i] && !(chre(pipex->cmd[pipex->i], "&&") || \
 		chre(pipex->cmd[pipex->i], "||")) && !chre(pipex->cmd[pipex->i], "|"))
 		pipex->i++;
-	pipex->i++;
+	if (pipex->cmd[pipex->i])
+		pipex->i++;
 	while (pipex->cmd[pipex->i] && !(chre(pipex->cmd[pipex->i], "&&") || chre(pipex->cmd[pipex->i], "||")))
-	{
-		while (cmds->next)
-			cmds = cmds->next;
-		tmp = malloc(sizeof(t_cmd));
-		list_init(tmp);
-		if (!tmp)
-			msg_error(ERR_MALLOC, pipex);
-		tmp->args = get_args(pipex, &pipex->cmd[pipex->i]);
-		get_infiles(pipex, &pipex->cmd[pipex->i], tmp);
-		get_outfiles(pipex, &pipex->cmd[pipex->i], tmp);
-		tmp->next = NULL;
-		cmds->next = tmp;
-		pipex->i += tablen(tmp->args) + (tablen(tmp->infiles_name) * 2) \
-			+ (tablen(tmp->outfiles_name) * 2);
-		if (pipex->cmd[pipex->i] && !(chre(pipex->cmd[pipex->i], "&&") || chre(pipex->cmd[pipex->i], "||")))
-			pipex->i++;
-	}
+		create_new_nodes(pipex, cmds);
+	tmp = cmds;
+	while (cmds->next)
+		cmds = cmds->next;
+	pipex->nb_pipes = 2 * (pipex->cmd_nmbs - 1);
+	cmds = tmp;
 }

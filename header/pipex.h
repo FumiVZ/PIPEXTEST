@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   pipex.h                                            :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: vzuccare <vzuccare@student.42lyon.fr>      +#+  +:+       +#+        */
+/*   By: vincent <vincent@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/21 17:18:11 by machrist          #+#    #+#             */
-/*   Updated: 2024/04/26 16:40:52 by vzuccare         ###   ########lyon.fr   */
+/*   Updated: 2024/04/27 00:22:52 by vincent          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -34,5 +34,7 @@ void	print_list(t_cmd *head);
 void	list_init(t_cmd *head);
 void	free_l(t_cmd *head);
 int		chre(char *s1, char *s2);
+void	redirect(t_pipex *pipex, t_cmd *cmd);
+void	close_pipes(t_pipex *pipex, t_cmd *cmd);
 
 #endif

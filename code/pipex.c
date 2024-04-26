@@ -3,37 +3,44 @@
 /*                                                        :::      ::::::::   */
 /*   pipex.c                                            :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: vzuccare <vzuccare@student.42lyon.fr>      +#+  +:+       +#+        */
+/*   By: vincent <vincent@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/19 19:23:42 by machrist          #+#    #+#             */
-/*   Updated: 2024/04/26 17:33:49 by vzuccare         ###   ########lyon.fr   */
+/*   Updated: 2024/04/27 01:43:01 by vincent          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../header/pipex.h"
 #include <stdio.h>
 
-void	close_pipes(t_pipex *pipex)
+void	close_pipes(t_pipex *pipex, t_cmd *cmd)
 {
 	int	i;
 
 	i = 0;
-	if (pipex->fd[0] || pipex->fd[1])
-	{
-		close(pipex->fd[0]);
-		close(pipex->fd[1]);
-	}
-	if (pipex->infile)
-		close(pipex->infile);
-	if (pipex->outfile)
-		close(pipex->outfile);
+	while (i < pipex->nb_pipes)
+		close(cmd->pipe[i++]);
+	free(cmd->pipe);
 }
 
-static void	crt_pipes(t_pipex *pipex)
+// TRY SOMETHING ELSE
+/* void	wait_execve(t_pipex *pipex)
 {
-	if (pipe(pipex->fd) == -1)
-		malloc_failed(pipex);
-}
+	int	status;
+	int	i;
+
+	i = 0;
+	while (pipex->pid[i] != -1)
+	{
+		waitpid(pipex->pid[i], &status, 0);
+		i++;
+	}
+	if (WIFEXITED(status))
+	{
+		parent_free(pipex);
+		exit (WEXITSTATUS(status));
+	}
+} */
 
 char	*find_path(char **env)
 {
@@ -68,7 +75,6 @@ void	init_pipex(t_pipex *pipex, char **env)
 			/usr/local/sbin:/usr/bin:/usr/sbin:/bin:/sbin:.", ':');
 	if (!pipex->paths)
 		malloc_failed(pipex);
-	crt_pipes(pipex);
 	child_crt(*pipex, env);
 }
 
@@ -77,8 +83,13 @@ int	main(int ac, char **av, char **env)
 	t_pipex	pipex;
 
 	(void) ac;
+	if (ac != 2)
+	{
+		ft_printf_fd(2, "DEBILE");
+		return (1);
+	}
 	pipex.cmd = ft_split(av[1], ' ');
 	init_pipex(&pipex, env);
-	close_pipes(&pipex);
+	wait_execve(&pipex);
 	return (0);
 }
