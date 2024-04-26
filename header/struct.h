@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   struct.h                                           :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: vzuccare <vzuccare@student.42lyon.fr>      +#+  +:+       +#+        */
+/*   By: vincent <vincent@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/21 17:20:40 by machrist          #+#    #+#             */
-/*   Updated: 2024/04/25 18:06:26 by vzuccare         ###   ########lyon.fr   */
+/*   Updated: 2024/04/25 22:11:09 by vincent          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,8 +17,11 @@
 
 typedef struct s_cmd
 {
-	char			*cmd;
 	char			**args;
+	int				*infiles;
+	char			**infiles_name;
+	int				*outfiles;
+	char			**outfiles_name;
 	struct s_cmd	*next;
 }	t_cmd;
 

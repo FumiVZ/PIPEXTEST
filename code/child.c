@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   child.c                                            :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: vzuccare <vzuccare@student.42lyon.fr>      +#+  +:+       +#+        */
+/*   By: vincent <vincent@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/21 17:28:06 by machrist          #+#    #+#             */
-/*   Updated: 2024/04/25 18:38:56 by vzuccare         ###   ########lyon.fr   */
+/*   Updated: 2024/04/26 01:34:27 by vincent          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -66,7 +66,7 @@ void	sub_dup2(int read, int write)
 
 static void	child_exec(t_pipex pipex, t_cmd cmds, char **env)
 {
-	return ;
+	exit (EXIT_FAILURE);
 	if (pipex.pid == 0)
 	{
 		pipex.cmd_paths = get_cmd_with_path(&pipex, &cmds);
@@ -93,35 +93,12 @@ static void	child_exec(t_pipex pipex, t_cmd cmds, char **env)
 
 void	child_crt(t_pipex pipex, char **env)
 {
-	(void) env;
 	t_cmd	*cmds;
-	int		i;
 
-	cmds = NULL;
-	i = 0;
-	while (pipex.cmd[pipex.i] && (ft_strncmp(pipex.cmd[pipex.i], "&&", 2) \
-		|| ft_strncmp(pipex.cmd[pipex.i], "||", 2)))
-	{
-		if (!redir_dup(&pipex))
-		{
-			insert_back(&cmds, &pipex);
-			while (pipex.cmd[pipex.i] && \
-				(ft_strncmp(pipex.cmd[pipex.i], ">>", 2) \
-					|| ft_strncmp(pipex.cmd[pipex.i], "<<", 2) \
-						|| pipex.cmd[pipex.i][0] != '|' \
-							|| pipex.cmd[pipex.i][0] != '<' \
-								|| pipex.cmd[pipex.i][0] != '>'))
-				pipex.i++;
-			ft_printf_fd(2, "cmd[%d] = %s\n", i, pipex.cmd[pipex.i]);
-		}
-		if (pipex.cmd[pipex.i])
-			pipex.i++;
-	}
-	close_pipes(&pipex);
+	cmds = malloc(sizeof(t_cmd));
+	(void)env;
+	parse_cmd(&pipex, cmds);
 	print_list(cmds);
-	while (cmds->next)
-	{
-		child_exec(pipex, *cmds, env);
-		cmds = cmds->next;
-	}
+	exit (EXIT_FAILURE);
+	child_exec(pipex, *cmds, env);
 }

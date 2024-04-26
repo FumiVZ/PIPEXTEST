@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   child.h                                            :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: vzuccare <vzuccare@student.42lyon.fr>      +#+  +:+       +#+        */
+/*   By: vincent <vincent@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/21 17:28:47 by machrist          #+#    #+#             */
-/*   Updated: 2024/04/25 18:27:17 by vzuccare         ###   ########lyon.fr   */
+/*   Updated: 2024/04/25 23:09:16 by vincent          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -28,6 +28,6 @@ void	msg_error(char *err, t_pipex *pipex);
 void	parent_free(t_pipex *pipex);
 void	close_pipes(t_pipex *pipex);
 void	sub_dup2(int read, int write);
-int		insert_back(t_cmd **head, t_pipex *pipex);
+void	parse_cmd(t_pipex *pipex, t_cmd *cmds);
 
 #endif

@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   command.c                                          :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: vzuccare <vzuccare@student.42lyon.fr>      +#+  +:+       +#+        */
+/*   By: vincent <vincent@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/11 16:46:51 by vzuccare          #+#    #+#             */
-/*   Updated: 2024/04/25 18:17:44 by vzuccare         ###   ########lyon.fr   */
+/*   Updated: 2024/04/25 21:01:25 by vincent          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -32,12 +32,6 @@ int	redir_dup(t_pipex *pipex)
 		if (pipex->outfile < 0)
 			msg_error_outfile(ERR_FILE, *pipex);
 		sub_dup2(pipex->pipe[pipex->p_i][0], pipex->outfile);
-		pipex->p_i++;
-		return (1);
-	}
-	else if (pipex->cmd[pipex->i][0] == '|')
-	{
-		sub_dup2(pipex->pipe[pipex->p_i][0], pipex->pipe[pipex->p_i][1]);
 		pipex->p_i++;
 		return (1);
 	}

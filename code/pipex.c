@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   pipex.c                                            :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: vzuccare <vzuccare@student.42lyon.fr>      +#+  +:+       +#+        */
+/*   By: vincent <vincent@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/19 19:23:42 by machrist          #+#    #+#             */
-/*   Updated: 2024/04/25 14:47:42 by vzuccare         ###   ########lyon.fr   */
+/*   Updated: 2024/04/25 20:59:34 by vincent          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -32,9 +32,7 @@ void	close_pipes(t_pipex *pipex)
 static void	wait_execve(t_pipex *pipex)
 {
 	int	status;
-	int	i;
 
-	i = 0;
 	waitpid(pipex->pid, &status, 0);
 	if (WIFEXITED(status))
 	{
