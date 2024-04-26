@@ -3,40 +3,47 @@
 /*                                                        :::      ::::::::   */
 /*   command.c                                          :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: vincent <vincent@student.42.fr>            +#+  +:+       +#+        */
+/*   By: vzuccare <vzuccare@student.42lyon.fr>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/11 16:46:51 by vzuccare          #+#    #+#             */
-/*   Updated: 2024/04/25 21:01:25 by vincent          ###   ########.fr       */
+/*   Updated: 2024/04/26 17:46:12 by vzuccare         ###   ########lyon.fr   */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../header/pipex.h"
 
-int	redir_dup(t_pipex *pipex)
+//reproduce the behavior of pipe in bash, we need to write the output of 
+//previous command to the input of the next command
+//the number of pipe is equal to the number of node in the linked list
+
+void	pipe_handle(t_pipex *pipex, t_cmd *cmd)
 {
-	if (pipex->cmd[pipex->i][0] == '<')
-	{
-		pipex->infile_name = pipex->cmd[pipex->i + 1];
-		pipex->infile = open(pipex->cmd[pipex->i + 1], O_RDONLY);
-		if (pipex->infile < 0)
-			msg_error_infile(ERR_FILE, *pipex);
-		sub_dup2(pipex->infile, pipex->pipe[pipex->p_i][1]);
-		pipex->p_i++;
-		return (1);
-	}
-	else if (pipex->cmd[pipex->i][0] == '>')
-	{
-		pipex->outfile_name = pipex->cmd[pipex->i + 1];
-		pipex->outfile = open(pipex->cmd[pipex->i + 1], \
-			flags(pipex->cmd[pipex->i + 1]), 0644);
-		if (pipex->outfile < 0)
-			msg_error_outfile(ERR_FILE, *pipex);
-		sub_dup2(pipex->pipe[pipex->p_i][0], pipex->outfile);
-		pipex->p_i++;
-		return (1);
-	}
-	return (0);
+
 }
+
+void	redirect(t_pipex *pipex, t_cmd *cmd)
+{
+	int		i;
+
+	i = 0;
+	if (cmd->infiles)
+	{
+		while (cmd->infiles[i])
+			i++;
+		dup2(cmd->infiles[i], STDIN_FILENO);
+		close(cmd->infiles[i]);
+	}
+	if (cmd->outfiles)
+	{
+		i = 0;
+		while (cmd->outfiles[i])
+			i++;
+		dup2(cmd->outfiles[i], STDOUT_FILENO);
+		close(cmd->outfiles[i]);
+	}
+	pipe_handle(pipex, cmd);
+}
+
 
 char	**command_get(t_pipex *pipex)
 {

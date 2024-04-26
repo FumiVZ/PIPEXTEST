@@ -3,14 +3,41 @@
 /*                                                        :::      ::::::::   */
 /*   list.c                                             :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: vincent <vincent@student.42.fr>            +#+  +:+       +#+        */
+/*   By: vzuccare <vzuccare@student.42lyon.fr>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/25 17:20:05 by vzuccare          #+#    #+#             */
-/*   Updated: 2024/04/26 02:15:04 by vincent          ###   ########.fr       */
+/*   Updated: 2024/04/26 15:34:13 by vzuccare         ###   ########lyon.fr   */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../header/pipex.h"
+
+void	free_l(t_cmd *head)
+{
+	t_cmd	*tmp;
+	int		i;
+
+	while (head)
+	{
+		i = -1;
+		while (head->args[++i])
+			free(head->args[i]);
+		free(head->args);
+		i = -1;
+		while (head->infiles_name[++i])
+			free(head->infiles_name[i]);
+		free(head->infiles_name);
+		i = -1;
+		while (head->outfiles_name[++i])
+			free(head->outfiles_name[i]);
+		free(head->outfiles_name);
+		free(head->infiles);
+		free(head->outfiles);
+		tmp = head;
+		head = head->next;
+		free(tmp);
+	}
+}
 
 void	list_init(t_cmd *head)
 {
@@ -27,7 +54,7 @@ void	print_list(t_cmd *head)
 	t_cmd	*tmp;
 	int		i;
 	int		len;
-	
+
 	len = 0;
 	tmp = head;
 	while (tmp)
@@ -55,5 +82,4 @@ void	print_list(t_cmd *head)
 		printf("len: %d\n", len);
 		tmp = tmp->next;
 	}
-	printf("len: %d\n", len);
 }

@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   struct.h                                           :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: vincent <vincent@student.42.fr>            +#+  +:+       +#+        */
+/*   By: vzuccare <vzuccare@student.42lyon.fr>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/21 17:20:40 by machrist          #+#    #+#             */
-/*   Updated: 2024/04/25 22:11:09 by vincent          ###   ########.fr       */
+/*   Updated: 2024/04/26 17:33:28 by vzuccare         ###   ########lyon.fr   */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -37,9 +37,9 @@ typedef struct s_pipex
 	char	*cmd_paths;
 	char	**cmd;
 	int		cmd_nmbs;
-	int		pipe_nmbs;
-	int		**pipe;
-	int		p_i;
+	int		status;
+	int		flag;
+	int		fd[2];
 }	t_pipex;
 
 void	print_tab(char **tab);

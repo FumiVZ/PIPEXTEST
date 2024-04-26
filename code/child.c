@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   child.c                                            :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: vincent <vincent@student.42.fr>            +#+  +:+       +#+        */
+/*   By: vzuccare <vzuccare@student.42lyon.fr>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/21 17:28:06 by machrist          #+#    #+#             */
-/*   Updated: 2024/04/26 01:34:27 by vincent          ###   ########.fr       */
+/*   Updated: 2024/04/26 17:01:34 by vzuccare         ###   ########lyon.fr   */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -50,8 +50,6 @@ static char	*get_cmd_with_path(t_pipex *pipex, t_cmd *cmds)
 			cmds->args[0], strerror(errno));
 		child_free(cmds);
 		parent_free(pipex);
-/* 		if (pipex->i == ac - 1)
-			exit (127); */
 		exit (EXIT_FAILURE);
 	}
 	else
@@ -66,39 +64,49 @@ void	sub_dup2(int read, int write)
 
 static void	child_exec(t_pipex pipex, t_cmd cmds, char **env)
 {
-	exit (EXIT_FAILURE);
-	if (pipex.pid == 0)
+	printf("cmd: %s\n", cmds.args[0]);
+	pipex.cmd_paths = get_cmd_with_path(&pipex, &cmds);
+	ft_printf_fd(2, "cmd_paths: %s\n", pipex.cmd_paths);
+	if (!pipex.cmd_paths || errno == EACCES)
 	{
-		pipex.cmd_paths = get_cmd_with_path(&pipex, &cmds);
-		if (!pipex.cmd[pipex.i])
-			pipex.cmd_paths = get_cmd(pipex.paths, cmds.args);
-		if (!pipex.cmd || errno == EACCES)
-		{
-			if (errno == EACCES)
-				msg_error_cmd(ERR_ACCESS, cmds);
-			else
-				msg_error_cmd(ERR_CMD, cmds);
-			child_free(&cmds);
-			parent_free(&pipex);
-		/* 		if (pipex.id == pipex.cmd_nmbs - 1)
-			exit (127); */
-			exit (EXIT_FAILURE);
-		}
-		execve(pipex.cmd_paths, cmds.args, env);
+		if (errno == EACCES)
+			msg_error_cmd(ERR_ACCESS, cmds);
+		else
+			msg_error_cmd(ERR_CMD, cmds);
 		child_free(&cmds);
 		parent_free(&pipex);
 		exit (EXIT_FAILURE);
 	}
+	execve(pipex.cmd_paths, cmds.args, env);
+	child_free(&cmds);
+	exit (EXIT_FAILURE);
 }
 
 void	child_crt(t_pipex pipex, char **env)
 {
 	t_cmd	*cmds;
 
+	pipex.status = -1;
 	cmds = malloc(sizeof(t_cmd));
 	(void)env;
-	parse_cmd(&pipex, cmds);
-	print_list(cmds);
-	exit (EXIT_FAILURE);
-	child_exec(pipex, *cmds, env);
+	while (pipex.cmd[pipex.i])
+	{
+		if (!(chre(pipex.cmd[pipex.i], "||") && pipex.status == 0))
+		{
+			parse_cmd(&pipex, cmds);
+			while (cmds->next)
+			{
+				pipex.pid = fork();
+				if (pipex.pid == -1)
+					msg_error(ERR_FORK, &pipex);
+				if (pipex.pid == 0)
+					child_exec(pipex, *cmds, env);
+				cmds = cmds->next;
+			}
+			print_list(cmds);
+			free_l(cmds);
+		}
+		pipex.i++;
+	}
+	parent_free(&pipex);
 }

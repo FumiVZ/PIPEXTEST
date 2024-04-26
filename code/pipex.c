@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   pipex.c                                            :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: vincent <vincent@student.42.fr>            +#+  +:+       +#+        */
+/*   By: vzuccare <vzuccare@student.42lyon.fr>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/19 19:23:42 by machrist          #+#    #+#             */
-/*   Updated: 2024/04/25 20:59:34 by vincent          ###   ########.fr       */
+/*   Updated: 2024/04/26 17:33:49 by vzuccare         ###   ########lyon.fr   */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,10 +18,10 @@ void	close_pipes(t_pipex *pipex)
 	int	i;
 
 	i = 0;
-	if (pipex->pipe[i][0] || pipex->pipe[i][1])
+	if (pipex->fd[0] || pipex->fd[1])
 	{
-		close(pipex->pipe[i][0]);
-		close(pipex->pipe[i][1]);
+		close(pipex->fd[0]);
+		close(pipex->fd[1]);
 	}
 	if (pipex->infile)
 		close(pipex->infile);
@@ -29,35 +29,10 @@ void	close_pipes(t_pipex *pipex)
 		close(pipex->outfile);
 }
 
-static void	wait_execve(t_pipex *pipex)
-{
-	int	status;
-
-	waitpid(pipex->pid, &status, 0);
-	if (WIFEXITED(status))
-	{
-		parent_free(pipex);
-		exit (WEXITSTATUS(status));
-	}
-}
-
 static void	crt_pipes(t_pipex *pipex)
 {
-	int	i;
-
-	i = 0;
-	pipex->pipe_nmbs = count_pipes(pipex);
-	pipex->pipe = malloc(sizeof(int *) * (pipex->pipe_nmbs + 1));
-	while (i < pipex->pipe_nmbs)
-	{
-		pipex->pipe[i] = malloc(sizeof(int) * 2);
-		if (pipe(pipex->pipe[i]) == -1)
-		{
-			close_pipes(pipex);
-			malloc_failed(pipex);
-		}
-		i++;
-	}
+	if (pipe(pipex->fd) == -1)
+		malloc_failed(pipex);
 }
 
 char	*find_path(char **env)
@@ -87,6 +62,7 @@ void	init_pipex(t_pipex *pipex, char **env)
 	pipex->outfile = 0;
 	pipex->i = 0;
 	pipex->paths = ft_split(find_path(env), ':');
+	pipex->flag = 0;
 	if (!pipex->paths)
 		pipex->paths = ft_split("/usr/local/bin:\
 			/usr/local/sbin:/usr/bin:/usr/sbin:/bin:/sbin:.", ':');
@@ -104,7 +80,5 @@ int	main(int ac, char **av, char **env)
 	pipex.cmd = ft_split(av[1], ' ');
 	init_pipex(&pipex, env);
 	close_pipes(&pipex);
-	wait_execve(&pipex);
-	parent_free(&pipex);
 	return (0);
 }
