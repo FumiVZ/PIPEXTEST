@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   command.c                                          :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: vzuccare <vzuccare@student.42lyon.fr>      +#+  +:+       +#+        */
+/*   By: vincent <vincent@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/11 16:46:51 by vzuccare          #+#    #+#             */
-/*   Updated: 2024/04/29 18:47:51 by vzuccare         ###   ########lyon.fr   */
+/*   Updated: 2024/04/30 01:35:07 by vincent          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -43,7 +43,6 @@ void	close_files(t_pipex	*pipex, t_cmd *cmd)
 		}
 		cmd = cmd->next;
 	}
-	close_pipes(pipex, pipex->cmds);
 }
 
 void	crt_pipes(t_pipex *pipex, t_cmd *cmd)
@@ -53,7 +52,8 @@ void	crt_pipes(t_pipex *pipex, t_cmd *cmd)
 	i = 0;
 	if (pipex->cmd_nmbs < 2)
 		return ;
-	cmd->pipe = malloc(sizeof(int) * pipex->nb_pipes);
+	ft_printf_fd(2, "%d\n", pipex->cmd_nmbs);
+	cmd->pipe = malloc(sizeof(int) * 2 * (pipex->cmd_nmbs - 1));
 	if (!cmd->pipe)
 		msg_error(ERR_PIPE, pipex);
 	while (i < pipex->cmd_nmbs - 1)
@@ -66,29 +66,30 @@ void	crt_pipes(t_pipex *pipex, t_cmd *cmd)
 
 void	pipe_handle(t_pipex *pipex, t_cmd *cmd)
 {
-	crt_pipes(pipex, cmd);
 	if (pipex->cmd_nmbs < 2)
 		return ;
-	if (cmd->pipeid == 0)
-	{
-		ft_printf_fd(2, "pipe start\n");
-		dup2(cmd->pipe[1], STDOUT_FILENO);
-		close(cmd->pipe[1]);
-	}
-	else if (cmd->pipeid == pipex->cmd_nmbs - 1)
-	{
-		ft_printf_fd(2, "pipe end\n");
-		dup2(cmd->pipe[2 * cmd->pipeid - 2], STDIN_FILENO);
-		close(cmd->pipe[2 * cmd->pipeid - 2]);
-	}
-	else
-	{
-		ft_printf_fd(2, "pipe middle\n");
-		dup2(cmd->pipe[2 * cmd->pipeid - 2], STDIN_FILENO);
-		close(cmd->pipe[2 * cmd->pipeid - 2]);
-		dup2(cmd->pipe[2 * cmd->pipeid + 1], STDOUT_FILENO);
-		close(cmd->pipe[2 * cmd->pipeid + 1]);
-	}
+	if (!pipex->cmds->pipe)
+		ft_printf_fd(2, "pipe is NULL\n");
+    if (cmd->pipeid == 0) {  // First command
+        ft_printf_fd(2, "pipe start\n");
+        dup2(pipex->cmds->pipe[1], STDOUT_FILENO);  // Write end of the first pipe
+        close(cmd->pipe[1]); // Close after dup2
+    }
+    else if (cmd->pipeid == pipex->cmd_nmbs - 1) {  // Last command
+        ft_printf_fd(2, "pipe end\n");
+		ft_printf_fd(2, "pipeid %d\n", cmd->pipeid);
+        dup2(pipex->cmds->pipe[2 * cmd->pipeid - 2], STDIN_FILENO);  // Read end of the last used pipe
+        close(pipex->cmds->pipe[2 * cmd->pipeid - 2]); // Close after dup2
+        close(pipex->cmds->pipe[2 * cmd->pipeid - 1]); // Close write end not used by this command
+    }
+    else {  // Middle commands
+        ft_printf_fd(2, "pipe middle\n");
+        dup2(pipex->cmds->pipe[2 * cmd->pipeid - 2], STDIN_FILENO);  // Read end of the previous pipe
+        dup2(pipex->cmds->pipe[2 * cmd->pipeid + 1], STDOUT_FILENO); // Write end of the current pipe
+        close(pipex->cmds->pipe[2 * cmd->pipeid - 2]); // Close after dup2
+        close(pipex->cmds->pipe[2 * cmd->pipeid + 1]); // Close after dup2
+        ft_printf_fd(2, "STDIN %d STDOUT %d\n", 2 * cmd->pipeid - 2, 2 * cmd->pipeid + 1);
+    }
 }
 
 void	redirect(t_pipex *pipex, t_cmd *cmd)

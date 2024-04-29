@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   parse_ex.c                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: vzuccare <vzuccare@student.42lyon.fr>      +#+  +:+       +#+        */
+/*   By: vincent <vincent@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/25 22:04:48 by vincent           #+#    #+#             */
-/*   Updated: 2024/04/29 10:13:48 by vzuccare         ###   ########lyon.fr   */
+/*   Updated: 2024/04/29 22:22:04 by vincent          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -196,13 +196,7 @@ void	create_new_nodes(t_pipex *pipex, t_cmd *cmds)
 	get_outfiles(pipex, &pipex->cmd[pipex->i], tmp);
 	tmp->next = NULL;
 	cmds->next = tmp;
-	pipex->i += tablen(tmp->args) + (tablen(tmp->infiles_name) * 2) \
-		+ (tablen(tmp->outfiles_name) * 2);
-	if (pipex->cmd[pipex->i] && (chre(pipex->cmd[pipex->i], "||") || chre(pipex->cmd[pipex->i], "&&")))
-	{
-		pipex->i++;
-		return ;
-	}
+	pipex->i += tablen(tmp->args) + tablen(tmp->infiles_name) + tablen(tmp->outfiles_name);
 	if (pipex->cmd[pipex->i])
 		pipex->i++;
 }
@@ -225,7 +219,6 @@ void	parse_cmd(t_pipex *pipex, t_cmd *cmds)
 		pipex->i++;
 	if (pipex->cmd[pipex->i] && (chre(pipex->cmd[pipex->i], "||") || chre(pipex->cmd[pipex->i], "&&")))
 	{
-		pipex->i++;
 		tmp = cmds;
 		while (cmds->next)
 			cmds = cmds->next;

@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   child.c                                            :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: vzuccare <vzuccare@student.42lyon.fr>      +#+  +:+       +#+        */
+/*   By: vincent <vincent@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/21 17:28:06 by machrist          #+#    #+#             */
-/*   Updated: 2024/04/29 18:51:25 by vzuccare         ###   ########lyon.fr   */
+/*   Updated: 2024/04/30 01:42:48 by vincent          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -59,7 +59,6 @@ static char	*get_cmd_with_path(t_pipex *pipex, t_cmd *cmds)
 static void	child_exec(t_pipex pipex, t_cmd cmds, char **env)
 {
 	redirect(&pipex, &cmds);
-	close_files(&pipex, pipex.cmds);
 	pipex.cmd_paths = get_cmd_with_path(&pipex, &cmds);
 	if (!pipex.cmd_paths || errno == EACCES)
 	{
@@ -96,31 +95,31 @@ void	multiple_command(t_pipex pipex, t_cmd *cmds, char **env)
 	int	i;
 
 	i = 0;
+	crt_pipes(&pipex, cmds);
 	while (cmds)
 	{
-		pipe_handle(&pipex, cmds);
+
 		pipex.pid[i] = fork();
 		if (pipex.pid[i] == -1)
 			msg_error(ERR_FORK, &pipex);
 		if (pipex.pid[i] == 0)
+		{
+			pipe_handle(&pipex, cmds);
 			child_exec(pipex, *cmds, env);
+		}
 		cmds = cmds->next;
 		i++;
 	}
-	print_list(pipex.cmds);
-	close_files(&pipex, pipex.cmds);
-	free_l(pipex.cmds);
+	if (pipex.pid[1] == 0)
+		exit (EXIT_FAILURE);
 	wait_execve(&pipex);
-	if (pipex.pid)
-		free(pipex.pid);
+	close_files(&pipex, pipex.cmds);
 }
 
 void	child_crt(t_pipex pipex, char **env)
 {
 	t_cmd	*cmds;
-	int		i;
 
-	i = 0;
 	pipex.status = -1;
 	cmds = malloc(sizeof(t_cmd));
 	while (pipex.cmd[pipex.i])
@@ -135,7 +134,8 @@ void	child_crt(t_pipex pipex, char **env)
 			multiple_command(pipex, cmds, env);
 		else
 			single_command(pipex, cmds, env);
-		parent_free(&pipex);
+		pipex.i++;
 	}
 	close_files(&pipex, pipex.cmds);
+	close_pipes(&pipex, pipex.cmds);
 }
