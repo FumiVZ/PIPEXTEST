@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   list.c                                             :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: vincent <vincent@student.42.fr>            +#+  +:+       +#+        */
+/*   By: vzuccare <vzuccare@student.42lyon.fr>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/25 17:20:05 by vzuccare          #+#    #+#             */
-/*   Updated: 2024/04/27 01:00:42 by vincent          ###   ########.fr       */
+/*   Updated: 2024/04/29 10:06:17 by vzuccare         ###   ########lyon.fr   */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,7 +16,7 @@ void	free_l(t_cmd *head)
 {
 	t_cmd	*tmp;
 	int		i;
-
+	
 	while (head)
 	{
 		i = -1;
@@ -26,24 +26,24 @@ void	free_l(t_cmd *head)
 				free(head->args[i]);
 			free(head->args);
 		}
-		i = -1;
+		i = 0;
 		if (head->infiles_name)
 		{
-			while (head->infiles_name[++i])
+			while (head->infiles_name[i])
 			{
 				free(head->infiles_name[i]);
-				close(head->infiles[i]);
+				i++;
 			}
 			free(head->infiles_name);
 			free(head->infiles);
 		}
-		i = -1;
+		i = 0;
 		if (head->outfiles_name)
 		{
-			while (head->outfiles_name[++i])
+			while (head->outfiles_name[i])
 			{
 				free(head->outfiles_name[i]);
-				close(head->outfiles[i]);
+				i++;
 			}
 			free(head->outfiles_name);
 			free(head->outfiles);
@@ -62,6 +62,7 @@ void	list_init(t_cmd *head)
 	head->outfiles = NULL;
 	head->outfiles_name = NULL;
 	head->next = NULL;
+	head->pipe = NULL;
 	head->pipeid = 0;
 }
 

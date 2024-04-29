@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   pipex.c                                            :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: vincent <vincent@student.42.fr>            +#+  +:+       +#+        */
+/*   By: vzuccare <vzuccare@student.42lyon.fr>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/19 19:23:42 by machrist          #+#    #+#             */
-/*   Updated: 2024/04/27 01:43:01 by vincent          ###   ########.fr       */
+/*   Updated: 2024/04/29 10:15:26 by vzuccare         ###   ########lyon.fr   */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,27 +20,24 @@ void	close_pipes(t_pipex *pipex, t_cmd *cmd)
 	i = 0;
 	while (i < pipex->nb_pipes)
 		close(cmd->pipe[i++]);
-	free(cmd->pipe);
 }
 
-// TRY SOMETHING ELSE
-/* void	wait_execve(t_pipex *pipex)
+void	wait_execve(t_pipex *pipex)
 {
 	int	status;
 	int	i;
 
 	i = 0;
-	while (pipex->pid[i] != -1)
+	status = 0;
+	printf("STATUS: %d\n", status);
+	while (i < pipex->cmd_nmbs - 1)
 	{
 		waitpid(pipex->pid[i], &status, 0);
 		i++;
 	}
-	if (WIFEXITED(status))
-	{
-		parent_free(pipex);
-		exit (WEXITSTATUS(status));
-	}
-} */
+	free(pipex->pid);
+	pipex->status = status;
+}
 
 char	*find_path(char **env)
 {
@@ -53,9 +50,11 @@ char	*find_path(char **env)
 	return (*env + 5);
 }
 
-void print_tab(char **tab)
+void	print_tab(char **tab)
 {
-	int i = 0;
+	int	i;
+
+	i = 0;
 	while (tab[i])
 	{
 		ft_printf_fd(2, "%s\n", tab[i]);
@@ -75,13 +74,22 @@ void	init_pipex(t_pipex *pipex, char **env)
 			/usr/local/sbin:/usr/bin:/usr/sbin:/bin:/sbin:.", ':');
 	if (!pipex->paths)
 		malloc_failed(pipex);
-	child_crt(*pipex, env);
+	while (pipex->cmd[pipex->i])
+	{
+		if (chre(pipex->cmd[pipex->i], "&&") && pipex->status == 0)
+			child_crt(*pipex, env);
+		else if (!chre(pipex->cmd[pipex->i], "||") || pipex->status != 0)
+			child_crt(*pipex, env);
+		pipex->i++;
+	}
 }
 
 int	main(int ac, char **av, char **env)
 {
 	t_pipex	pipex;
+	int	i;
 
+	i = 0;
 	(void) ac;
 	if (ac != 2)
 	{
@@ -90,6 +98,5 @@ int	main(int ac, char **av, char **env)
 	}
 	pipex.cmd = ft_split(av[1], ' ');
 	init_pipex(&pipex, env);
-	wait_execve(&pipex);
 	return (0);
 }

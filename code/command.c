@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   command.c                                          :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: vincent <vincent@student.42.fr>            +#+  +:+       +#+        */
+/*   By: vzuccare <vzuccare@student.42lyon.fr>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/11 16:46:51 by vzuccare          #+#    #+#             */
-/*   Updated: 2024/04/27 00:51:10 by vincent          ###   ########.fr       */
+/*   Updated: 2024/04/29 18:47:51 by vzuccare         ###   ########lyon.fr   */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,22 +19,31 @@
 void	close_files(t_pipex	*pipex, t_cmd *cmd)
 {
 	int	i;
-	
+
 	(void)pipex;
 	i = 0;
-	if (cmd->infiles)
+	while (cmd)
 	{
-		while (cmd->infiles[i] != -1)
-			close(cmd->infiles[i++]);
-		free(cmd->infiles);
+		if (cmd->infiles)
+		{
+			while (cmd->infiles[i] != -1)
+			{
+				close(cmd->infiles[i]);
+				i++;
+			}
+		}
+		i = 0;
+		if (cmd->outfiles)
+		{
+			while (cmd->outfiles[i] != -1)
+			{
+				close(cmd->outfiles[i]);
+				i++;
+			}
+		}
+		cmd = cmd->next;
 	}
-	i = 0;
-	if (cmd->outfiles)
-	{
-		while (cmd->outfiles[i] != -1)
-			close(cmd->outfiles[i++]);
-		free(cmd->outfiles);
-	}
+	close_pipes(pipex, pipex->cmds);
 }
 
 void	crt_pipes(t_pipex *pipex, t_cmd *cmd)
@@ -60,25 +69,25 @@ void	pipe_handle(t_pipex *pipex, t_cmd *cmd)
 	crt_pipes(pipex, cmd);
 	if (pipex->cmd_nmbs < 2)
 		return ;
-	if (cmd->next && cmd->pipeid == 0)
+	if (cmd->pipeid == 0)
 	{
 		ft_printf_fd(2, "pipe start\n");
 		dup2(cmd->pipe[1], STDOUT_FILENO);
 		close(cmd->pipe[1]);
 	}
-	if (cmd->pipeid == -1)
+	else if (cmd->pipeid == pipex->cmd_nmbs - 1)
 	{
 		ft_printf_fd(2, "pipe end\n");
-		dup2(cmd->pipe[2 * pipex->cmd_nmbs - 2], STDIN_FILENO);
-		close(cmd->pipe[2 * pipex->cmd_nmbs - 2]);
-	}
-	else if (cmd->pipeid > 0 && cmd->next)
-	{
-		ft_printf_fd(2, "pipe middle\n");
-		dup2(cmd->pipe[2 * cmd->pipeid + 1], STDOUT_FILENO);
-		close(cmd->pipe[2 * cmd->pipeid + 1]);
 		dup2(cmd->pipe[2 * cmd->pipeid - 2], STDIN_FILENO);
 		close(cmd->pipe[2 * cmd->pipeid - 2]);
+	}
+	else
+	{
+		ft_printf_fd(2, "pipe middle\n");
+		dup2(cmd->pipe[2 * cmd->pipeid - 2], STDIN_FILENO);
+		close(cmd->pipe[2 * cmd->pipeid - 2]);
+		dup2(cmd->pipe[2 * cmd->pipeid + 1], STDOUT_FILENO);
+		close(cmd->pipe[2 * cmd->pipeid + 1]);
 	}
 }
 
@@ -87,7 +96,7 @@ void	redirect(t_pipex *pipex, t_cmd *cmd)
 	int		i;
 
 	i = 0;
-	pipe_handle(pipex, cmd);
+	(void)pipex;
 	if (cmd->infiles)
 	{
 		while (cmd->infiles[i] != -1)
