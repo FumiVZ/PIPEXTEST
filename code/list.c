@@ -6,7 +6,7 @@
 /*   By: vzuccare <vzuccare@student.42lyon.fr>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/25 17:20:05 by vzuccare          #+#    #+#             */
-/*   Updated: 2024/04/29 10:06:17 by vzuccare         ###   ########lyon.fr   */
+/*   Updated: 2024/04/30 16:15:42 by vzuccare         ###   ########lyon.fr   */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,7 +16,7 @@ void	free_l(t_cmd *head)
 {
 	t_cmd	*tmp;
 	int		i;
-	
+
 	while (head)
 	{
 		i = -1;
@@ -48,6 +48,8 @@ void	free_l(t_cmd *head)
 			free(head->outfiles_name);
 			free(head->outfiles);
 		}
+		if (head->pipe)
+			free(head->pipe);
 		tmp = head;
 		head = head->next;
 		free(tmp);

@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   parse_ex.c                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: vincent <vincent@student.42.fr>            +#+  +:+       +#+        */
+/*   By: vzuccare <vzuccare@student.42lyon.fr>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/25 22:04:48 by vincent           #+#    #+#             */
-/*   Updated: 2024/04/29 22:22:04 by vincent          ###   ########.fr       */
+/*   Updated: 2024/04/30 16:13:40 by vzuccare         ###   ########lyon.fr   */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -197,7 +197,7 @@ void	create_new_nodes(t_pipex *pipex, t_cmd *cmds)
 	tmp->next = NULL;
 	cmds->next = tmp;
 	pipex->i += tablen(tmp->args) + tablen(tmp->infiles_name) + tablen(tmp->outfiles_name);
-	if (pipex->cmd[pipex->i])
+	if (pipex->cmd[pipex->i] && chre(pipex->cmd[pipex->i], "|"))
 		pipex->i++;
 }
 

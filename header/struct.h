@@ -6,7 +6,7 @@
 /*   By: vzuccare <vzuccare@student.42lyon.fr>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/21 17:20:40 by machrist          #+#    #+#             */
-/*   Updated: 2024/04/29 18:39:30 by vzuccare         ###   ########lyon.fr   */
+/*   Updated: 2024/04/30 13:22:41 by vzuccare         ###   ########lyon.fr   */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -48,9 +48,10 @@ typedef struct s_pipex
 void	print_tab(char **tab);
 int		count_pipes(t_pipex *pipex);
 void	close_pipes(t_pipex *pipex, t_cmd *cmd);
-void	crt_pipes(t_pipex *pipex, t_cmd *cmd);
 void	close_files(t_pipex	*pipex, t_cmd *cmd);
 void	wait_execve(t_pipex *pipex);
 void	pipe_handle(t_pipex *pipex, t_cmd *cmd);
+void	wait_execve(t_pipex *pipex);
+void	crt_pipes(t_pipex *pipex, t_cmd *cmd);
 
 #endif

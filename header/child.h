@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   child.h                                            :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: vincent <vincent@student.42.fr>            +#+  +:+       +#+        */
+/*   By: vzuccare <vzuccare@student.42lyon.fr>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/21 17:28:47 by machrist          #+#    #+#             */
-/*   Updated: 2024/04/27 00:21:49 by vincent          ###   ########.fr       */
+/*   Updated: 2024/04/30 15:07:41 by vzuccare         ###   ########lyon.fr   */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,7 +19,7 @@
 # include <libft.h>
 # include <fcntl.h>
 
-void	child_free(t_cmd *cmds);
+void	child_free(t_pipex *pipex);
 int		msg(char *err);
 void	msg_error_infile(char *err, t_pipex pipex);
 void	msg_error_outfile(char *err, t_pipex pipex);
