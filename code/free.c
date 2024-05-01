@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   free.c                                             :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: vzuccare <vzuccare@student.42lyon.fr>      +#+  +:+       +#+        */
+/*   By: vincent <vincent@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/21 17:53:23 by machrist          #+#    #+#             */
-/*   Updated: 2024/04/30 16:04:31 by vzuccare         ###   ########lyon.fr   */
+/*   Updated: 2024/05/01 01:37:40 by vincent          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,8 +23,6 @@ void	parent_free(t_pipex *pipex)
 			free(pipex->paths[i++]);
 		free(pipex->paths);
 	}
-	if (pipex->cmd && pipex->cmd[0] && pipex->cmd[0][0])
-		free_split(pipex->cmd, tablen(pipex->cmd));
 	pipex->cmd = NULL;
 }
 

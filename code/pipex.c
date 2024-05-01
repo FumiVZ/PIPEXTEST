@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   pipex.c                                            :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: vzuccare <vzuccare@student.42lyon.fr>      +#+  +:+       +#+        */
+/*   By: vincent <vincent@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/19 19:23:42 by machrist          #+#    #+#             */
-/*   Updated: 2024/04/30 14:56:44 by vzuccare         ###   ########lyon.fr   */
+/*   Updated: 2024/05/01 01:21:48 by vincent          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,7 +24,7 @@ void	close_pipes(t_pipex *pipex, t_cmd *cmd)
 		close(cmd->pipe[i++]);
 }
 
-void	wait_execve(t_pipex *pipex)
+int	wait_execve(t_pipex *pipex)
 {
 	int	status;
 	int	i;
@@ -36,6 +36,7 @@ void	wait_execve(t_pipex *pipex)
 		waitpid(pipex->pid[i], &status, 0);
 		if (WIFEXITED(status))
 		{
+			printf("status: %d\n", WEXITSTATUS(status));
 			pipex->status = WEXITSTATUS(status);
 		}
 		i++;
@@ -44,6 +45,7 @@ void	wait_execve(t_pipex *pipex)
 	{
 		pipex->status = WEXITSTATUS(status);
 	}
+	return (status);
 }
 
 char	*find_path(char **env)
@@ -81,7 +83,10 @@ void	init_pipex(t_pipex *pipex, char **env)
 			/usr/local/sbin:/usr/bin:/usr/sbin:/bin:/sbin:.", ':');
 	if (!pipex->paths)
 		malloc_failed(pipex);
-	child_crt(*pipex, env);
+	while (pipex->cmd[pipex->i])
+	{
+		pipex->i = child_crt(*pipex, env);
+	}
 	parent_free(pipex);
 }
 

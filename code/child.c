@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   child.c                                            :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: vzuccare <vzuccare@student.42lyon.fr>      +#+  +:+       +#+        */
+/*   By: vincent <vincent@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/21 17:28:06 by machrist          #+#    #+#             */
-/*   Updated: 2024/04/30 16:17:44 by vzuccare         ###   ########lyon.fr   */
+/*   Updated: 2024/05/01 01:42:59 by vincent          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -92,7 +92,7 @@ void	single_command(t_pipex *pipex, t_cmd *cmds, char **env)
 	free_l(pipex->cmds);
 }
 
-void	multiple_command(t_pipex *pipex, t_cmd *cmds, char **env)
+int	multiple_command(t_pipex *pipex, t_cmd *cmds, char **env)
 {
 	int	i;
 
@@ -113,31 +113,33 @@ void	multiple_command(t_pipex *pipex, t_cmd *cmds, char **env)
 	}
 	close_files(pipex, pipex->cmds);
 	close_pipes(pipex, pipex->cmds);
-	wait_execve(pipex);
+	i = wait_execve(pipex);
 	free_l(pipex->cmds);
 	free(pipex->pid);
+	return (i);
 }
 
-void	child_crt(t_pipex pipex, char **env)
+int	child_crt(t_pipex pipex, char **env)
 {
 	t_cmd	*cmds;
 
 	pipex.status = -1;
 	cmds = malloc(sizeof(t_cmd));
-	while (pipex.cmd[pipex.i])
-	{
-		parse_cmd(&pipex, cmds);
-		print_list(cmds);
-		pipex.cmds = cmds;
-		if (cmds->next)
-			multiple_command(&pipex, cmds, env);
-		else
-			single_command(&pipex, cmds, env);
-		if (pipex.cmd[pipex.i])
+	parse_cmd(&pipex, cmds);
+	pipex.cmds = cmds;
+	if (cmds->next)
+		multiple_command(&pipex, cmds, env);
+	else
+		single_command(&pipex, cmds, env);
+	ft_printf_fd(2, "pipex->cmd[pipex->i] = %s\n", pipex.cmd[pipex.i]);
+	ft_printf_fd(2, "pipex->status = %d\n", pipex.status);
+	if (pipex.cmd[pipex.i])
+		pipex.i++;
+	if (pipex.status != 0 && pipex.cmd[pipex.i - 1] && chre(pipex.cmd[pipex.i - 1], "&&"))
+		while (pipex.cmd[pipex.i] && !(chre(pipex.cmd[pipex.i], "&&") || chre(pipex.cmd[pipex.i], "||")))
 			pipex.i++;
-		if (pipex.status == 0 && pipex.cmd[pipex.i] && chre(pipex.cmd[pipex.i], "&&"))
+	else if (pipex.status == 0 && pipex.cmd[pipex.i - 1] && chre(pipex.cmd[pipex.i - 1], "||"))
+		while (pipex.cmd[pipex.i] && !(chre(pipex.cmd[pipex.i], "&&") || chre(pipex.cmd[pipex.i], "||")))
 			pipex.i++;
-		else if (pipex.status != 0 && pipex.cmd[pipex.i] && chre(pipex.cmd[pipex.i], "||"))
-			pipex.i++;
-	}
+	return (pipex.i);
 }

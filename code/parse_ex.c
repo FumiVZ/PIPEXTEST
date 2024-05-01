@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   parse_ex.c                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: vzuccare <vzuccare@student.42lyon.fr>      +#+  +:+       +#+        */
+/*   By: vincent <vincent@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/25 22:04:48 by vincent           #+#    #+#             */
-/*   Updated: 2024/04/30 16:13:40 by vzuccare         ###   ########lyon.fr   */
+/*   Updated: 2024/05/01 01:47:58 by vincent          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -101,6 +101,19 @@ static void	get_infiles(t_pipex *pipex, char **cmd, t_cmd *cmds)
 	}
 }
 
+int		open_outfiles(t_pipex *pipex, char *cmd, char *file)
+{
+	int	fd;
+
+	if (chre(cmd, ">"))
+		fd = open(file, O_WRONLY | O_CREAT | O_TRUNC, 0644);
+	else
+		fd = open(file, O_WRONLY | O_CREAT | O_APPEND, 0644);
+	if (fd < 0)
+		msg_error_outfile(ERR_FILE, *pipex);
+	return (fd);
+}
+
 static void	get_outfiles(t_pipex *pipex, char **cmd, t_cmd *cmds)
 {
 	int	i;
@@ -117,7 +130,7 @@ static void	get_outfiles(t_pipex *pipex, char **cmd, t_cmd *cmds)
 		if (chre(cmd[i], ">") || chre(cmd[i], ">>"))
 		{
 			cmds->outfiles_name[j] = ft_strdup(cmd[i + 1]);
-			cmds->outfiles[j] = open(cmd[i + 1], flags(cmd[i]), 0644);
+			cmds->outfiles[j] = open_outfiles(pipex, cmd[i], cmd[i + 1]);
 			if (cmds->outfiles[j++] < 0)
 				msg_error_outfile(ERR_FILE, *pipex);
 		}
